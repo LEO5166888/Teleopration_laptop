@@ -15,5 +15,5 @@ if ! lsof -nP -iTCP:8766 -sTCP:LISTEN >/dev/null 2>&1; then
   exit 1
 fi
 
-exec .venv/bin/python mac_hold_teleop.py "$@"
+exec .venv/bin/python keyboard_control.py "$@"
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Press-and-hold Mac keyboard control for the S4 simulator.
+"""Beginner press-and-hold Mac keyboard control for the S4 simulator.
 
 The Tk window supplies real key-release events without global keyboard hooks.
 Arm and gripper motion use start/keepalive/stop messages. Losing keepalives makes
@@ -30,26 +30,24 @@ JOINT_JOGS = {
     "k": ("wrist_flex", -1, "wrist flex -"),
 }
 
+# The beginner interface intentionally exposes only Cartesian movement,
+# emergency stop/reset, scene reset, and quit. Advanced joint, gripper,
+# frame, and speed controls remain disabled for the onboarding ticket.
+STUDENT_ALLOWED_KEYS = set(MOVES) | {"0", "e", "t", "q"}
+
 HELP = """Click this window, then hold a movement key:
 
 W / S : farther onto table / toward robot base
 A / D : toward green target / away from green target
 R / F : up / down
-Hold I / K: wrist flex + / -; release to stop
 
 Release the key to stop.
-1 / 2 : free fine 9 cm/s / coarse 18 cm/s
-        closed-gripper carry: 3 cm/s / 6 cm/s
-M     : toggle base/tool frame
-Hold C: close gripper; release C: stop at the current opening
-Hold O: open gripper; release O: stop at the current opening
-      open=90/180 deg/s; close=30/60 deg/s
-I / K : free=45/90 deg/s; carrying=15/30 deg/s
 0     : reset scene
 E / T : emergency stop / reset emergency stop
 Q     : quit
 
-Use fine + base near the table. Losing window focus also stops motion.
+This beginner controller is locked to fine + base mode.
+Losing window focus also stops motion.
 """
 
 
@@ -72,8 +70,8 @@ class HoldTeleop:
         self.active_grip = None
         self.closed = False
 
-        root.title("S4 SO-101 Hold Control")
-        root.geometry("600x500")
+        root.title("SO-101 Beginner Keyboard Control")
+        root.geometry("600x440")
         root.protocol("WM_DELETE_WINDOW", self.request_quit)
         root.bind("<KeyPress>", self.on_key_press)
         root.bind("<KeyRelease>", self.on_key_release)
@@ -84,7 +82,7 @@ class HoldTeleop:
         self.state_var = tk.StringVar(value="Waiting for state...")
         tk.Label(
             root,
-            text="S4 SO-101 — hold to move, release to stop",
+            text="SO-101 beginner control — hold to move",
             font=("Helvetica", 18, "bold"),
         ).pack(pady=(16, 8))
         tk.Label(root, textvariable=self.mode_var, font=("Helvetica", 14)).pack()
@@ -112,9 +110,7 @@ class HoldTeleop:
 
     def refresh_mode(self):
         self.mode_var.set(
-            f"Mode: {self.step} / {self.frame}    "
-            f"free={0.09 if self.step == 'fine' else 0.18:.2f} m/s; "
-            f"carry={0.03 if self.step == 'fine' else 0.06:.2f} m/s"
+            "Mode locked: fine / base    free=0.09 m/s; carry=0.03 m/s"
         )
 
     def refresh_state(self):
@@ -139,6 +135,9 @@ class HoldTeleop:
 
     def on_key_press(self, event):
         key = event.keysym.lower()
+        if key not in STUDENT_ALLOWED_KEYS:
+            self.status_var.set("Beginner mode: use W/S/A/D/R/F, E/T, 0, or Q")
+            return "break"
         if key in MOVES or key in JOINT_JOGS or key in {"c", "o"}:
             if self.held_key == key:
                 # Tk may synthesize release/press pairs for key repeat.
