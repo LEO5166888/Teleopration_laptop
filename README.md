@@ -25,6 +25,10 @@
 
 第一週只要把環境裝好，證明鍵盤可以讓手臂移動並在放開後停止。
 
+> **唯一控制入口：`./scripts/start_keyboard.sh`**
+> 這個指令會啟動「按住持續移動、放開立即停止」的 keyboard teleop。
+> 不要直接執行 `mac_move_delta.py`；它只是程式內部使用的 helper。
+
 ## Repository 內只有什麼
 
 ```text
@@ -103,6 +107,13 @@ cd "$HOME/Documents/Teleopration_laptop"
 git pull --ff-only origin main
 ./scripts/start_keyboard.sh
 ```
+
+這裡啟動的是連續 jog 控制：
+
+1. 按下移動鍵時送出 `jog_start`。
+2. 按住期間持續送出 keepalive，手臂持續移動。
+3. 放開按鍵時送出 `jog_stop`，手臂停止。
+4. 若視窗失去焦點或 keepalive 中斷，Server 也會停止移動。
 
 成功時會開啟 `SO-101 Beginner Keyboard Control` 視窗，Terminal 顯示：
 
