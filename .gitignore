@@ -1,0 +1,11 @@
+.DS_Store
+.venv/
+__pycache__/
+*.py[cod]
+*.jsonl
+
+# Never commit local HTTPS certificates or private keys.
+.cert/
+*.pem
+*.key
+
